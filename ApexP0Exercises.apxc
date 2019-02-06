@@ -1,0 +1,211 @@
+/*
+
+Project 0 Apex exercises
+Created by Robert Chhoeut
+Test cases
+Open Execute Anonymous test this cases below
+ApexP0Exercises.nFibonacci(0);
+ApexP0Exercises.nFibonacci(1);
+ApexP0Exercises.nFibonacci(2);
+ApexP0Exercises.nFibonacci(10);
+ApexP0Exercises.sortArray(new integer[] {2,4,5,1,3,1});
+ApexP0Exercises.sortArray(new integer[] {5,4,3,2,1});
+ApexP0Exercises.nFactorial(0);
+ApexP0Exercises.nFactorial(1);
+ApexP0Exercises.nFactorial(3);
+ApexP0Exercises.rotateLeftNTimes(new integer[] {1,2,3,4,5},1);
+ApexP0Exercises.rotateLeftNTimes(new integer[] {1,2,3,4,5},6);
+ApexP0Exercises.rotateLeftNTimes(new integer[] {1,2,3,4,5},3);
+ApexP0Exercises.bracketsAreBalanced('( )');
+ApexP0Exercises.bracketsAreBalanced('( ) ( )');
+ApexP0Exercises.bracketsAreBalanced('( ( ) )');
+ApexP0Exercises.bracketsAreBalanced('( { [ ] } )');
+ApexP0Exercises.bracketsAreBalanced('(');
+ApexP0Exercises.bracketsAreBalanced(')');
+ApexP0Exercises.bracketsAreBalanced('( ( )');
+ApexP0Exercises.bracketsAreBalanced('( [ ) ]');
+
+Additionally you can query these to check it did everything properly
+SELECT Name, NumberOfEmployees, Size__c 
+From Account
+GROUP BY Size__c, NumberOfEmployees, Name
+
+SELECT Name, Company, Status, Description 
+FROM Lead
+WHERE State = 'ca'
+
+SELECT Name, CloseDate, StageName
+FROM Opportunity
+WHERE CloseDate < TODAY AND StageName != 'Closed Won'
+GROUP BY StageName, CloseDate, Name
+
+
+*/
+public class ApexP0Exercises {
+    public ApexP0Exercises(){
+        
+    }
+    
+    //1
+    public static Integer nFibonacci( Integer n ){      
+        //We start with 3 integers f is the current fibonacci f1 is the previous fibonacci and f2 represents the second fibonacci
+	Integer f=0,f1=1,f2=0;
+	//we start with our base cases, 0 returns 0 and 1 returns 1
+        if(n<=1){
+            if(n<1){
+                system.debug(f);
+                return f;
+            }
+            system.debug(1);
+            return 1;
+        }
+        //We loop based on user input
+        for(Integer a = 1; a < n; a++){
+            //previous fibonacci's are added to make the current fibonacci
+	    f=f1+f2;
+            //the previous fibonacci's are updated with the previous and current value for the next iteration
+	    f2=f1;
+            f1=f;
+        }
+        system.debug(f);
+        return f;
+    }
+    //2
+    public static Integer[] sortArray( Integer[] intList ) {
+        //typical bubble sort, most simple sorting method, we basically compare the each element with each other and swap if one is bigger than the other
+	//it's a nested for loop so it allows you to compare each index with the other
+	Integer temp;  
+        String printed = '[';
+        for(integer a = 0; a < intList.size()-1; a++){
+            for(integer b = a + 1; b < intList.size(); b++){
+                if(intList[a]>intList[b]){
+                    temp = intList[a];
+                    intList[a] = intList[b];
+                    intList[b] = temp;
+                }
+            }
+        }        
+        for(integer d = 0; d < intList.size()-1; d++){
+            printed = printed + String.valueOf(intList[d]) + ',';	
+		}
+        printed = printed + String.valueOf(intList[intList.size()-1]) + ']';
+        	system.debug(printed);
+        return intList;
+    }
+    //3
+    public static Integer nFactorial(Integer n) {
+        Integer factorial = 1;
+        //factorial calculation n*(n-1)*(n-2)....
+        while(n>1){
+            factorial= factorial * n;
+            n--;
+        }
+        system.debug(factorial);
+        return factorial;
+    }
+    //4
+    public static Integer[] rotateLeftNTimes( Integer[] arrayA, Integer n) {
+        //basically there are a certain limit to unique rotations, it cycles back. 6 is the same as 1 
+	n = math.mod(n, arrayA.size());
+        //not important to the algorithim, just system debug formatting
+	String printed = '[';
+        //here we basically store the numbers that will appear on the right side
+	List<integer> arrayB = new List<integer>();
+        for(integer a = 0; a < n; a++){
+            arrayB.add(arrayA[a]);
+        }
+        //we move the rest of the numbers left 
+	for(integer b = 0; b < arrayA.size()-n; b++){
+            arrayA[b] = arrayA[b+n];
+        }
+        //then we move the numbers we stored in arrayB into their new position on the right side
+	for(integer c = 0; c < n; c++){
+            arrayA[(arrayA.size()-1)-c] = arrayB.remove(arrayB.size()-1);
+        }
+	//system debug formatting
+		for(integer d = 0; d < arrayA.size()-1; d++){
+            printed = printed + String.valueOf(arrayA[d]) + ',';	
+		}
+        printed = printed + String.valueOf(arrayA[arrayA.size()-1]) + ']';
+        system.debug(printed);
+		return arrayA;
+    }
+    //5
+    public static boolean bracketsAreBalanced( String s ) {
+        //Split the user input of String s into a String list called 'a' removing white spaces. Example -> '{ { ( ) } }' becomes {'{','{','(',')','}','}'}
+	List<String> a = s.split(' ');
+        //We create a new list b to check if the brackets in List a close. If they close, the two closing brackets are removed from list b.
+	List<String> b = new List<String>();
+        //This loops through List a, its entire size, removing each element into b
+	while(!a.isEmpty()){
+            //we add remove firest element to list b
+	    b.add(a.remove(0));
+            if(b.size()>1){
+                //We check if list b has more than one element so we can compare if any brackets are closed, and remove them from the list
+                //check if last element is closed with second to last with {} () and []
+                if(  (b.get(b.size()-1).equals('}') &&  b.get(b.size()-2).equals('{')) ||
+                     (b.get(b.size()-1).equals(')') &&  b.get(b.size()-2).equals('(')) ||
+                     (b.get(b.size()-1).equals(']') &&  b.get(b.size()-2).equals('['))          
+                  )
+                {
+                    //we remove those last two elements if they close with each other
+		    b.remove(b.size()-1);
+                    b.remove(b.size()-1);
+                } 
+                
+            }
+            
+        }
+	//if all brackets in list be were checked and closed, then all of them should have been removed from list b, thus making it empty
+        system.debug((b.isEmpty())?true:false);
+        return (b.isEmpty())?true:false;
+        
+
+    }
+    //6
+    public static void updateAccountSize(){
+	//we basically select from account
+        List<Account> a = [SELECT Name, NumberOfEmployees, Size__c 
+                           From Account];
+        for(Account b: a){
+	    //Then we loop through all the queries and categorize them based on number of employees
+            if(b.NumberOfEmployees >= 1 && b.NumberOfEmployees <= 1000){
+                b.Size__c = 'small';
+            }
+            if(b.NumberOfEmployees > 1000 && b.NumberOfEmployees <=10000){
+                b.Size__c = 'medium';
+            }
+            if(b.NumberOfEmployees > 10000){
+                b.Size__c = 'large';
+            }
+        }
+        update a;
+        
+    }
+    //7
+    public static void updateCALeads( ) {
+	// we get california leads
+        List<Lead> l = [SELECT Name, Company, Status, Description 
+						FROM Lead
+						WHERE State = 'ca'];
+        //we change all the status to closed not converted, and give the new description
+	for(Lead m:l){
+            m.Status = 'Closed - Not Converted';
+            m.Description = 'We are no longer doing business in California.';
+        }
+        update l;
+    }
+    //8
+    public static void closePastDueOpportunities( ) {
+	//we get opportunities where stage is not closed won and the close date is older than today so closed
+        List<Opportunity> o = [SELECT Name, CloseDate, StageName
+							   FROM Opportunity
+							   WHERE CloseDate < TODAY AND StageName != 'Closed Won'];
+        //we change them into closed lost accordingly
+	for(Opportunity p:o){
+            p.StageName = 'Closed Lost';
+        }
+        update o;
+     }
+    
+}
