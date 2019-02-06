@@ -1,0 +1,65 @@
+/*
+ * Author Robert Chhoeut
+ * Banking application methods 
+ * 
+ * Some test methods Used in class
+ * ApexP0.checkOverdrawn('113523');
+   ApexP0.newTransaction('113523','111111119',-1000,'Withdrawl');
+   ApexP0.currentBalance('113523');
+*/
+public class ApexP0 {
+    //check overdrawn
+    public static void checkOverdrawn(String a){
+        //goes through all checking accounts of a bank account
+        List<Checking__c> c = [SELECT Account__r.Name, Name, Balance__c
+							   FROM Checking__c
+							   WHERE Balance__C < 0
+                               AND Account__r.AccountNumber = :a];
+        //sets the overdrawn one's to checkbox to show they are overdrawn
+        for(Checking__c d:c){
+            d.Overdrawn__c = true;
+        }
+        update c;
+    }
+    //create a new transaction, the first input is the account number, the second is the checking account number associated with the account
+    //The decimal input is the amount we are transacting
+    //the description input sets what description we specify
+    public static void newTransaction(String a, String b, Decimal d, String descrip){
+        Checking__c c = [SELECT Name
+					     FROM Checking__c 
+                         WHERE Account__r.AccountNumber = :a
+                         AND Checking_Account_Number__c = :b];
+		//we get the id of the checking account we are adding to. then we add the amount, then transaction date of now, and our description
+        Checking_Transaction__c cT = new Checking_Transaction__c(Checking__c = c.Id, Amount__c = d, Transaction_Date__c = DateTime.Now(), Description__c = descrip);
+        //insert the new transaction
+        Insert cT;
+    }
+    //we get the balance of the savings added with the checkings transactions
+    public static void currentBalance(String a){
+        Decimal total;
+        //we select the account
+        Account user = [SELECT Name FROM Account WHERE AccountNumber = :a];
+        //we aggregate the savings transactions across all the accounts savings accounts
+        AggregateResult s = [SELECT SUM(Amount__c) savingTotal
+					         FROM Saving_Transaction__c
+					         WHERE Saving__r.Account__r.AccountNumber = :a];
+        //we aggregate the checking transactions across all the accounts checking accounts
+        AggregateResult c = [SELECT SUM(Amount__c) checkingTotal
+						     FROM Checking_Transaction__c
+						     WHERE Checking__r.Account__r.AccountNumber = :a];
+        //We add the checking total and savings total across all checking and savings account owned by the account
+        total = (Decimal)c.get('checkingTotal') + (Decimal)s.get('savingTotal');
+		//we update the account's total balance including checking and saving
+        user.Total_Balanace__c = total;
+        update user;
+        System.debug(total);
+        
+        
+        
+    }
+}
+        
+        
+        
+    }
+}
